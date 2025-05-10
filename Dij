@@ -1,0 +1,76 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <limits.h>
+
+#define MAX_VERTICES 100
+
+// Find vertex with minimum distance not yet visited
+int findMinDistance(int distance[], int visited[], int numVertices) {
+    int min = INT_MAX, minIndex = -1;
+    for (int v = 0; v < numVertices; v++)
+        if (!visited[v] && distance[v] <= min)
+            min = distance[v], minIndex = v;
+    return minIndex;
+}
+
+// Print distances from source
+void printDistances(int distance[], int numVertices, int source) {
+    printf("\nShortest distances from vertex %d:\n", source);
+    for (int i = 0; i < numVertices; i++)
+        if (distance[i] == INT_MAX)
+            printf("To %d \t-> Unreachable\n", i);
+        else
+            printf("To %d \t-> %d\n", i, distance[i]);
+}
+
+// Dijkstra's algorithm
+void dijkstra(int **graph, int numVertices, int source) {
+    int distance[MAX_VERTICES], visited[MAX_VERTICES];
+    for (int i = 0; i < numVertices; i++)
+        distance[i] = INT_MAX, visited[i] = 0;
+    distance[source] = 0;
+    for (int count = 0; count < numVertices - 1; count++) {
+        int u = findMinDistance(distance, visited, numVertices);
+        if (u == -1) break;
+        visited[u] = 1;
+        for (int v = 0; v < numVertices; v++)
+            if (!visited[v] && graph[u][v] && distance[u] != INT_MAX &&
+                distance[u] + graph[u][v] < distance[v])
+                distance[v] = distance[u] + graph[u][v];
+    }
+    printDistances(distance, numVertices, source);
+}
+
+int main() {
+    int numVertices, numEdges;
+    printf("Enter number of vertices: ");
+    scanf("%d", &numVertices);
+
+    // Allocate graph
+    int **graph = (int **)malloc(numVertices * sizeof(int *));
+    for (int i = 0; i < numVertices; i++)
+        graph[i] = (int *)calloc(numVertices, sizeof(int));
+
+    printf("Enter number of edges: ");
+    scanf("%d", &numEdges);
+
+    printf("Enter edges as: source destination weight\n");
+    for (int i = 0; i < numEdges; i++) {
+        int from, to, weight;
+        scanf("%d %d %d", &from, &to, &weight);
+        graph[from][to] = weight;
+    }
+
+    int source;
+    printf("Enter source vertex: ");
+    scanf("%d", &source);
+
+    dijkstra(graph, numVertices, source);
+
+    // Free memory
+    for (int i = 0; i < numVertices; i++)
+        free(graph[i]);
+    free(graph);
+
+    return 0;
+}
